@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>QR Skaner</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+</head>
+<body>
+  <div class="container">
+    <h2>📷 QR Kodni Skanerlang</h2>
+    <p class="hint">Ofis devorida osig'lik turgan QR kodni kamera oldiga tutun</p>
+
+    <div id="reader"></div>
+
+    <div id="status" class="status hidden"></div>
+    <button id="retry-btn" class="hidden" onclick="startScanner()">🔄 Qayta urinish</button>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

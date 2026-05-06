@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Ofis QR — Davomat</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #1a1a2e;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      font-family: sans-serif;
+      color: #fff;
+    }
+    h1 { font-size: 2rem; margin-bottom: 8px; }
+    .subtitle { color: #aaa; margin-bottom: 32px; font-size: 1rem; }
+    #qr-wrap {
+      background: #fff;
+      border-radius: 20px;
+      padding: 24px;
+      box-shadow: 0 0 40px rgba(100,200,255,0.3);
+    }
+    #qr-img { display: block; width: 280px; height: 280px; }
+    .timer-bar {
+      width: 280px; height: 6px;
+      background: #333; border-radius: 3px;
+      margin-top: 16px; overflow: hidden;
+    }
+    .timer-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #00c9ff, #92fe9d);
+      border-radius: 3px;
+      transition: width 1s linear;
+    }
+    .status { margin-top: 12px; color: #92fe9d; font-size: 0.9rem; }
+  </style>
+</head>
+<body>
+  <h1>📷 Davomat QR</h1>
+  <p class="subtitle">Telegramdan skanerlang</p>
+  <div id="qr-wrap"><img id="qr-img" src="" alt="QR"/></div>
+  <div class="timer-bar"><div class="timer-fill" id="bar"></div></div>
+  <p class="status" id="status">Yuklanmoqda...</p>
+
+  <script>
+    const WINDOW = 60;
+    const SECRET = "6QaqCsEmjbwLVKXSVx6T5K3Ey-nkpaYuYL57zC8DCyw";
+
+    async function hmacToken(secret, t) {
+      const key = await crypto.subtle.importKey(
+        "raw", new TextEncoder().encode(secret),
+        { name: "HMAC", hash: "SHA-256" }, false, ["sign"]
+      );
+      const sig = await crypto.subtle.sign(
+        "HMAC", key, new TextEncoder().encode(String(t))
+      );
+      return Array.from(new Uint8Array(sig))
+        .map(b => b.toString(16).padStart(2, "0")).join("").slice(0, 20);
+    }
+
+    async function getToken() {
+      const t = Math.floor(Date.now() / 1000 / WINDOW);
+      return hmacToken(SECRET, t);
+    }
+
+    async function refresh() {
+      const token = await getToken();
+      const url = "https://api.qrserver.com/v1/create-qr-code/?size=280x280&ecc=H&data="
+        + encodeURIComponent(token);
+      document.getElementById("qr-img").src = url;
+      document.getElementById("status").textContent =
+        "✅ Yangilandi — " + new Date().toLocaleTimeString("uz");
+    }
+
+    function updateBar() {
+      const elapsed = (Date.now() / 1000) % WINDOW;
+      const pct = ((WINDOW - elapsed) / WINDOW * 100).toFixed(1);
+      document.getElementById("bar").style.width = pct + "%";
+      if (Math.floor(elapsed) === 0) refresh();
+    }
+
+    refresh();
+    setInterval(updateBar, 1000);
+  </script>
+</body>
+</html>
